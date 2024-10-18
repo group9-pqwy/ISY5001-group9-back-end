@@ -3,8 +3,6 @@ import joblib
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-import tensorflow as tf
-from keras.api.models import load_model
 
 # 创建Flask应用
 app = Flask(__name__)
@@ -13,14 +11,7 @@ app = Flask(__name__)
 word2vec_model = joblib.load('word2vec_model.pkl')
 scaler = joblib.load('scaler.pkl')
 kmeans_model = joblib.load('kmeans_model.pkl')
-# 不编译模型，避免编译时出错
-matrix_factorization_model = load_model('matrix_factorization_model.h5', compile=False)
-
-# 重新编译模型，手动指定损失函数
-matrix_factorization_model.compile(optimizer='adam', loss='mse')
-
-# 加载干净的车辆数据
-df = pd.read_csv("clean_data.csv")
+matrix_factorization_model = joblib.load('matrix_factorization_model.pkl')  # 使用 joblib 加载 PKL 格式的模型
 
 # 加载干净的车辆数据
 df = pd.read_csv("clean_data.csv")
@@ -28,9 +19,6 @@ df = pd.read_csv("clean_data.csv")
 # 如果 'carId' 列不存在，创建该列
 if 'carId' not in df.columns:
     df['carId'] = df.index
-
-# 确保 'carId' 列已经存在
-car_ids = df['carId'].unique().tolist()
 
 # 特征列
 features = ['year', 'make', 'model', 'trim', 'body', 'transmission', 'color', 'interior', 'car_age']
@@ -48,13 +36,27 @@ car_vectors = scaler.transform(car_vectors)
 # 基于内容的推荐函数
 def content_based_recommendation(user_input, top_n=10):
     try:
+        # 构建用户向量，只使用提供的特征进行嵌入计算
         user_vector = np.mean([word2vec_model.wv[feature] for feature in user_input.values() if feature in word2vec_model.wv] or [np.zeros(100)], axis=0)
         user_vector = scaler.transform([user_vector])
+        
+        # 计算相似度
         similarities = cosine_similarity(user_vector, car_vectors)[0]
         similar_car_indices = np.argsort(similarities)[::-1][:top_n]
+        
+        # 返回推荐的车辆
         return df.iloc[similar_car_indices]
     except Exception as e:
         print(f"Error in content_based_recommendation: {e}")
+        return pd.DataFrame()
+
+# 空推荐函数：随机选择车辆
+def empty_recommendation(top_n=10):
+    try:
+        # 随机选择车辆
+        return df.sample(n=top_n)
+    except Exception as e:
+        print(f"Error in empty_recommendation: {e}")
         return pd.DataFrame()
 
 # 矩阵分解推荐函数
@@ -66,7 +68,6 @@ def matrix_factorization_recommendation(user_ratings, user_id, top_n=10):
         # 初始化用户ID编码映射
         user_ids = user_ratings['userId'].unique().tolist()
         user2user_encoded = {x: i for i, x in enumerate(user_ids)}
-        #user_encoded2user = {i: x for i, x in enumerate(user_ids)}
 
         cars_not_watched = df[~df["carId"].isin(user_ratings['carId'])]["carId"]
         cars_not_watched_encoded = [car2car_encoded.get(x) for x in cars_not_watched if x in car2car_encoded]
@@ -95,21 +96,28 @@ def recommend():
         search_data = request.get_json()
         print("Received search data: ", search_data)
 
-        # 构建用户输入字典
+        # 构建用户输入字典，只保留实际提供的输入值
         user_input = {
-            'year': search_data.get('year', 'Unknown'),
-            'make': search_data.get('make', 'Unknown'),
-            'model': search_data.get('model', 'Unknown'),
-            'trim': search_data.get('trim', 'Unknown'),
-            'body': search_data.get('body', 'Unknown'),
-            'transmission': search_data.get('transmission', 'Unknown'),
-            'color': search_data.get('color', 'Unknown'),
-            'interior': search_data.get('interior', 'Unknown'),
-            'car_age': search_data.get('car_age', 1)
+            key: value for key, value in {
+                'year': search_data.get('year'),
+                'make': search_data.get('make'),
+                'model': search_data.get('model'),
+                'trim': search_data.get('trim'),
+                'body': search_data.get('body'),
+                'transmission': search_data.get('transmission'),
+                'color': search_data.get('color'),
+                'interior': search_data.get('interior'),
+                'car_age': search_data.get('car_age')
+            }.items() if value is not None
         }
 
-        # 首先使用基于内容的推荐
-        recommendations = content_based_recommendation(user_input)
+        # 检查用户是否输入了至少一个有效字段
+        if not user_input or not any(user_input.values()):
+            # 当所有字段都没有提供时，触发空推荐
+            recommendations = empty_recommendation()
+        else:
+            # 当至少有一个字段提供时，使用基于内容的推荐
+            recommendations = content_based_recommendation(user_input)
 
         # 检查是否提供了用户评分数据，如果有则使用矩阵分解推荐
         if 'user_ratings' in search_data:

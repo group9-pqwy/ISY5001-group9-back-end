@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="nus.iss.ais.carquest.mapper.SearchHistoryMapper">
+  <resultMap id="BaseResultMap" type="nus.iss.ais.carquest.model.SearchHistory">
+    <id column="search_id" jdbcType="INTEGER" property="searchId" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="make" jdbcType="VARCHAR" property="make" />
+    <result column="model" jdbcType="VARCHAR" property="model" />
+    <result column="color" jdbcType="VARCHAR" property="color" />
+    <result column="trim" jdbcType="VARCHAR" property="trim" />
+    <result column="body" jdbcType="VARCHAR" property="body" />
+    <result column="transmission" jdbcType="VARCHAR" property="transmission" />
+    <result column="vin" jdbcType="VARCHAR" property="vin" />
+    <result column="state" jdbcType="VARCHAR" property="state" />
+    <result column="condition" jdbcType="VARCHAR" property="condition" />
+    <result column="min_odometer" jdbcType="INTEGER" property="minOdometer" />
+    <result column="max_odometer" jdbcType="INTEGER" property="maxOdometer" />
+    <result column="interior" jdbcType="VARCHAR" property="interior" />
+    <result column="seller" jdbcType="VARCHAR" property="seller" />
+    <result column="mmr" jdbcType="DECIMAL" property="mmr" />
+    <result column="min_price" jdbcType="DECIMAL" property="minPrice" />
+    <result column="max_price" jdbcType="DECIMAL" property="maxPrice" />
+    <result column="search_time" jdbcType="TIMESTAMP" property="searchTime" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    search_id, user_id, make, model, color, trim, body, transmission, vin, state, condition, 
+    min_odometer, max_odometer, interior, seller, mmr, min_price, max_price, search_time
+  </sql>
+  <select id="selectByExample" parameterType="nus.iss.ais.carquest.model.SearchHistoryExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from search_history
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectMostFrequentSearch" parameterType="java.lang.Integer" resultType="nus.iss.ais.carquest.model.SearchHistory">
+    SELECT
+      sh.make,
+      sh.model,
+      sh.color,
+      sh.trim,
+      sh.body,
+      sh.min_price AS minPrice,
+      sh.max_price AS maxPrice,
+      COUNT(*) AS cnt
+    FROM
+      search_history sh
+    WHERE
+      sh.user_id = #{userId}
+    GROUP BY
+      sh.make, sh.model, sh.color, sh.trim, sh.body, sh.min_price, sh.max_price
+    ORDER BY
+      cnt DESC
+      LIMIT 1
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from search_history
+    where search_id = #{searchId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from search_history
+    where search_id = #{searchId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="nus.iss.ais.carquest.model.SearchHistoryExample">
+    delete from search_history
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="nus.iss.ais.carquest.model.SearchHistory">
+    insert into search_history (search_id, user_id, make, 
+      model, color, trim, 
+      body, transmission, vin, 
+      state, `condition`, min_odometer,
+      max_odometer, interior, seller, 
+      mmr, min_price, max_price, 
+      search_time)
+    values (#{searchId,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{make,jdbcType=VARCHAR}, 
+      #{model,jdbcType=VARCHAR}, #{color,jdbcType=VARCHAR}, #{trim,jdbcType=VARCHAR}, 
+      #{body,jdbcType=VARCHAR}, #{transmission,jdbcType=VARCHAR}, #{vin,jdbcType=VARCHAR}, 
+      #{state,jdbcType=VARCHAR}, #{condition,jdbcType=VARCHAR}, #{minOdometer,jdbcType=INTEGER}, 
+      #{maxOdometer,jdbcType=INTEGER}, #{interior,jdbcType=VARCHAR}, #{seller,jdbcType=VARCHAR}, 
+      #{mmr,jdbcType=DECIMAL}, #{minPrice,jdbcType=DECIMAL}, #{maxPrice,jdbcType=DECIMAL}, 
+      #{searchTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="nus.iss.ais.carquest.model.SearchHistory">
+    insert into search_history
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="searchId != null">
+        search_id,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="make != null">
+        make,
+      </if>
+      <if test="model != null">
+        model,
+      </if>
+      <if test="color != null">
+        color,
+      </if>
+      <if test="trim != null">
+        trim,
+      </if>
+      <if test="body != null">
+        body,
+      </if>
+      <if test="transmission != null">
+        transmission,
+      </if>
+      <if test="vin != null">
+        vin,
+      </if>
+      <if test="state != null">
+        state,
+      </if>
+      <if test="condition != null">
+        condition,
+      </if>
+      <if test="minOdometer != null">
+        min_odometer,
+      </if>
+      <if test="maxOdometer != null">
+        max_odometer,
+      </if>
+      <if test="interior != null">
+        interior,
+      </if>
+      <if test="seller != null">
+        seller,
+      </if>
+      <if test="mmr != null">
+        mmr,
+      </if>
+      <if test="minPrice != null">
+        min_price,
+      </if>
+      <if test="maxPrice != null">
+        max_price,
+      </if>
+      <if test="searchTime != null">
+        search_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="searchId != null">
+        #{searchId,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="make != null">
+        #{make,jdbcType=VARCHAR},
+      </if>
+      <if test="model != null">
+        #{model,jdbcType=VARCHAR},
+      </if>
+      <if test="color != null">
+        #{color,jdbcType=VARCHAR},
+      </if>
+      <if test="trim != null">
+        #{trim,jdbcType=VARCHAR},
+      </if>
+      <if test="body != null">
+        #{body,jdbcType=VARCHAR},
+      </if>
+      <if test="transmission != null">
+        #{transmission,jdbcType=VARCHAR},
+      </if>
+      <if test="vin != null">
+        #{vin,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="condition != null">
+        #{condition,jdbcType=VARCHAR},
+      </if>
+      <if test="minOdometer != null">
+        #{minOdometer,jdbcType=INTEGER},
+      </if>
+      <if test="maxOdometer != null">
+        #{maxOdometer,jdbcType=INTEGER},
+      </if>
+      <if test="interior != null">
+        #{interior,jdbcType=VARCHAR},
+      </if>
+      <if test="seller != null">
+        #{seller,jdbcType=VARCHAR},
+      </if>
+      <if test="mmr != null">
+        #{mmr,jdbcType=DECIMAL},
+      </if>
+      <if test="minPrice != null">
+        #{minPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="maxPrice != null">
+        #{maxPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="searchTime != null">
+        #{searchTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="nus.iss.ais.carquest.model.SearchHistoryExample" resultType="java.lang.Long">
+    select count(*) from search_history
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update search_history
+    <set>
+      <if test="row.searchId != null">
+        search_id = #{row.searchId,jdbcType=INTEGER},
+      </if>
+      <if test="row.userId != null">
+        user_id = #{row.userId,jdbcType=INTEGER},
+      </if>
+      <if test="row.make != null">
+        make = #{row.make,jdbcType=VARCHAR},
+      </if>
+      <if test="row.model != null">
+        model = #{row.model,jdbcType=VARCHAR},
+      </if>
+      <if test="row.color != null">
+        color = #{row.color,jdbcType=VARCHAR},
+      </if>
+      <if test="row.trim != null">
+        trim = #{row.trim,jdbcType=VARCHAR},
+      </if>
+      <if test="row.body != null">
+        body = #{row.body,jdbcType=VARCHAR},
+      </if>
+      <if test="row.transmission != null">
+        transmission = #{row.transmission,jdbcType=VARCHAR},
+      </if>
+      <if test="row.vin != null">
+        vin = #{row.vin,jdbcType=VARCHAR},
+      </if>
+      <if test="row.state != null">
+        state = #{row.state,jdbcType=VARCHAR},
+      </if>
+      <if test="row.condition != null">
+        condition = #{row.condition,jdbcType=VARCHAR},
+      </if>
+      <if test="row.minOdometer != null">
+        min_odometer = #{row.minOdometer,jdbcType=INTEGER},
+      </if>
+      <if test="row.maxOdometer != null">
+        max_odometer = #{row.maxOdometer,jdbcType=INTEGER},
+      </if>
+      <if test="row.interior != null">
+        interior = #{row.interior,jdbcType=VARCHAR},
+      </if>
+      <if test="row.seller != null">
+        seller = #{row.seller,jdbcType=VARCHAR},
+      </if>
+      <if test="row.mmr != null">
+        mmr = #{row.mmr,jdbcType=DECIMAL},
+      </if>
+      <if test="row.minPrice != null">
+        min_price = #{row.minPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="row.maxPrice != null">
+        max_price = #{row.maxPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="row.searchTime != null">
+        search_time = #{row.searchTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update search_history
+    set search_id = #{row.searchId,jdbcType=INTEGER},
+      user_id = #{row.userId,jdbcType=INTEGER},
+      make = #{row.make,jdbcType=VARCHAR},
+      model = #{row.model,jdbcType=VARCHAR},
+      color = #{row.color,jdbcType=VARCHAR},
+      trim = #{row.trim,jdbcType=VARCHAR},
+      body = #{row.body,jdbcType=VARCHAR},
+      transmission = #{row.transmission,jdbcType=VARCHAR},
+      vin = #{row.vin,jdbcType=VARCHAR},
+      state = #{row.state,jdbcType=VARCHAR},
+      condition = #{row.condition,jdbcType=VARCHAR},
+      min_odometer = #{row.minOdometer,jdbcType=INTEGER},
+      max_odometer = #{row.maxOdometer,jdbcType=INTEGER},
+      interior = #{row.interior,jdbcType=VARCHAR},
+      seller = #{row.seller,jdbcType=VARCHAR},
+      mmr = #{row.mmr,jdbcType=DECIMAL},
+      min_price = #{row.minPrice,jdbcType=DECIMAL},
+      max_price = #{row.maxPrice,jdbcType=DECIMAL},
+      search_time = #{row.searchTime,jdbcType=TIMESTAMP}
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="nus.iss.ais.carquest.model.SearchHistory">
+    update search_history
+    <set>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="make != null">
+        make = #{make,jdbcType=VARCHAR},
+      </if>
+      <if test="model != null">
+        model = #{model,jdbcType=VARCHAR},
+      </if>
+      <if test="color != null">
+        color = #{color,jdbcType=VARCHAR},
+      </if>
+      <if test="trim != null">
+        trim = #{trim,jdbcType=VARCHAR},
+      </if>
+      <if test="body != null">
+        body = #{body,jdbcType=VARCHAR},
+      </if>
+      <if test="transmission != null">
+        transmission = #{transmission,jdbcType=VARCHAR},
+      </if>
+      <if test="vin != null">
+        vin = #{vin,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        state = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="condition != null">
+        condition = #{condition,jdbcType=VARCHAR},
+      </if>
+      <if test="minOdometer != null">
+        min_odometer = #{minOdometer,jdbcType=INTEGER},
+      </if>
+      <if test="maxOdometer != null">
+        max_odometer = #{maxOdometer,jdbcType=INTEGER},
+      </if>
+      <if test="interior != null">
+        interior = #{interior,jdbcType=VARCHAR},
+      </if>
+      <if test="seller != null">
+        seller = #{seller,jdbcType=VARCHAR},
+      </if>
+      <if test="mmr != null">
+        mmr = #{mmr,jdbcType=DECIMAL},
+      </if>
+      <if test="minPrice != null">
+        min_price = #{minPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="maxPrice != null">
+        max_price = #{maxPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="searchTime != null">
+        search_time = #{searchTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where search_id = #{searchId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="nus.iss.ais.carquest.model.SearchHistory">
+    update search_history
+    set user_id = #{userId,jdbcType=INTEGER},
+      make = #{make,jdbcType=VARCHAR},
+      model = #{model,jdbcType=VARCHAR},
+      color = #{color,jdbcType=VARCHAR},
+      trim = #{trim,jdbcType=VARCHAR},
+      body = #{body,jdbcType=VARCHAR},
+      transmission = #{transmission,jdbcType=VARCHAR},
+      vin = #{vin,jdbcType=VARCHAR},
+      state = #{state,jdbcType=VARCHAR},
+      condition = #{condition,jdbcType=VARCHAR},
+      min_odometer = #{minOdometer,jdbcType=INTEGER},
+      max_odometer = #{maxOdometer,jdbcType=INTEGER},
+      interior = #{interior,jdbcType=VARCHAR},
+      seller = #{seller,jdbcType=VARCHAR},
+      mmr = #{mmr,jdbcType=DECIMAL},
+      min_price = #{minPrice,jdbcType=DECIMAL},
+      max_price = #{maxPrice,jdbcType=DECIMAL},
+      search_time = #{searchTime,jdbcType=TIMESTAMP}
+    where search_id = #{searchId,jdbcType=INTEGER}
+  </update>
+</mapper>

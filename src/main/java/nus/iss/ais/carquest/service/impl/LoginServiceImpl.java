@@ -4,19 +4,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import nus.iss.ais.carquest.mapper.UsersMapper;
-import nus.iss.ais.carquest.model.SearchHistory;
 import nus.iss.ais.carquest.model.Users;
 import nus.iss.ais.carquest.model.UsersExample;
 import nus.iss.ais.carquest.service.LoginService;
-import org.apache.tomcat.jni.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class LoginServiceImpl implements LoginService {

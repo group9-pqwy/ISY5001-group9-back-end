@@ -64,7 +64,6 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
         if (carSearchRequest.getMmr() != null) {
             searchHistory.setMmr(BigDecimal.valueOf(carSearchRequest.getMmr()));
         } else {
-            // 设置默认值或忽略
             searchHistory.setMmr(BigDecimal.ZERO);
         }
         if (carSearchRequest.getMinPrice() != null) {

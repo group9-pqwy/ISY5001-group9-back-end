@@ -13,11 +13,11 @@ public class CarSearchRequest {
     private String vin;
     private String state;
     private String condition;
-    private Integer minOdometer;  // 改为 Integer
-    private Integer maxOdometer;  // 改为 Integer
+    private Integer minOdometer;
+    private Integer maxOdometer;
     private String interior;
     private String seller;
-    private Double mmr;           // 改为 Double
-    private Double minPrice;      // 改为 Double
-    private Double maxPrice;      // 改为 Double
+    private Double mmr;
+    private Double minPrice;
+    private Double maxPrice;
 }

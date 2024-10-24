@@ -21,14 +21,11 @@ public class ModelServiceImpl implements ModelService {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
-            // 设置请求头，指定 Content-Type 为 application/json
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // 构建请求数据，只包含 Flask 接口需要的字段
             Map<String, Object> requestData = new HashMap<>();
 
-            // 添加 MainPageRECParams 中的字段
             if (mainPageRECParams.getMake() != null) {
                 requestData.put("make", mainPageRECParams.getMake());
             }
@@ -45,20 +42,16 @@ public class ModelServiceImpl implements ModelService {
                 requestData.put("body", mainPageRECParams.getBody());
             }
 
-            // 添加 Flask 接口需要的其他字段，设置为 null
             requestData.put("year", null);
             requestData.put("transmission", null);
             requestData.put("interior", null);
             requestData.put("car_age", null);
 
-            // 创建请求实体，包含请求头和请求体（requestData 对象）
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestData, headers);
 
-            // 使用 ParameterizedTypeReference 来处理泛型类型
             ParameterizedTypeReference<List<Map<String, Object>>> responseType =
                     new ParameterizedTypeReference<List<Map<String, Object>>>() {};
 
-            // 发送 POST 请求，并接收响应
             ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
                     flaskUrl,
                     HttpMethod.POST,
@@ -66,13 +59,10 @@ public class ModelServiceImpl implements ModelService {
                     responseType
             );
 
-            // 获取响应体
             List<Map<String, Object>> responseData = response.getBody();
 
-            // 创建一个列表来存储 MainPageRECParams 对象
             List<MainPageRECReturnParams> resultList = new ArrayList<>();
 
-            // 遍历响应数据，提取所需的属性
             for (Map<String, Object> item : responseData) {
                 String make = (String) item.get("make");
                 String model = (String) item.get("model");
@@ -89,13 +79,11 @@ public class ModelServiceImpl implements ModelService {
             return resultList;
 
         } catch (Exception e) {
-            // 处理异常
             e.printStackTrace();
             return Collections.emptyList();
         }
     }
 
-    // 定义与 Flask 交互的方法
     @Override
     public ResponseEntity<?> getRecommendations(CarSearchRequest carSearchRequest) {
         String flaskUrl = "http://localhost:5000/recommend";
@@ -109,7 +97,7 @@ public class ModelServiceImpl implements ModelService {
                 return ResponseEntity.status(response.getStatusCode()).body("Error fetching recommendations from Flask");
             }
         } catch (Exception e) {
-            e.printStackTrace(); // 打印异常堆栈
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error connecting to Flask service");
         }
     }

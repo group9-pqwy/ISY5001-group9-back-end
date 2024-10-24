@@ -1,8 +1,6 @@
 package nus.iss.ais.carquest.entity;
 
 import lombok.Data;
-
-import java.math.BigDecimal;
 @Data
 public class MainPageRECReturnParams {
     private String make;
